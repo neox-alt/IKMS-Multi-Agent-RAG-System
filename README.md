@@ -2,6 +2,9 @@
 
 * Deployed on : https://ikms-multi-agent-rag-system.onrender.com/frontend/
 
+* Note : Since the application is deployed on Render’s free tier, the service goes into a sleep state when it’s idle.
+When a new request comes in after inactivity, the platform performs a cold start, which can cause a short delay before the application becomes responsive.
+
 ## 1\. ProjectOverview ##
 
 **The IKMSMulti-Agent RAG System is a production-ready Retrieval-Augmented Generation(RAG) application designed to answer complex questions over uploaded PDFdocuments.**
