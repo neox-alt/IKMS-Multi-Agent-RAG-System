@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IKMS Multi-Agent RAG</title>
+  <link rel="stylesheet" href="/frontend/style.css">
+</head>
+<body>
+
+  <h1>IKMS Multi-Agent RAG System</h1>
+  <p>Query Planning & Decomposition Enabled</p>
+
+  <hr>
+
+  <h2>1️⃣ Upload & Index PDF</h2>
+  <input type="file" id="pdfFile" accept="application/pdf">
+  <br><br>
+  <button onclick="indexPDF()">Index PDF</button>
+
+  <hr>
+
+  <h2>2️⃣ Ask a Question</h2>
+  <textarea
+    id="question"
+    rows="5"
+    placeholder="Ask a complex question about the document..."
+  ></textarea>
+  <br>
+  <label>
+  <input type="checkbox" id="enablePlanning" checked />
+  Enable query planning
+  </label>
+  <br><br>
+  <button id="askBtn" type="button" onclick="askQuestion()">
+  Ask
+</button>
+  <div id="loading" style="display: none; margin-top: 15px;">
+  <div class="spinner"></div>
+  <p>Processing your question…</p>
+  </div>
+
+  <h3>🧠 Query Plan</h3>
+  <pre id="plan"></pre>
+
+  <h3>🔍 Decomposed Sub-Questions</h3>
+  <ul id="subQuestions"></ul>
+
+  <h3>✅ Answer</h3>
+  <p id="answer"></p>
+
+  <script src="/frontend/script.js"></script>
+</body>
+</html>
