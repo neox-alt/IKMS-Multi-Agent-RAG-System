@@ -1,3 +1,425 @@
+**IKMSMulti-Agent RAG System – Enhancements Documentation**
+
+## 1\. ProjectOverview ##
+
+**The IKMSMulti-Agent RAG System is a production-ready Retrieval-Augmented Generation(RAG) application designed to answer complex questions over uploaded PDFdocuments.**
+
+**The systemfollows a multi-agent architecture using LangGraph, where each agent isresponsible for a clearly defined step in the reasoning pipeline. Over thecourse of development, multiple enhancements were introduced to improve:**
+
+*   **Explainability**
+    
+
+*   **User experience**
+    
+
+*   **Flexibility**
+    
+
+*   **Production readiness**
+    
+
+*   **Deployment suitability**
+    
+
+**This documentdescribes all enhancements added beyond a basic RAG system, along with theirpurpose and implementation details.**
+
+## 2.Multi-Agent Architecture Enhancement
+
+### 2.1 InitialFlow (Baseline)
+
+**The originalsystem followed a simple linear flow:**
+
+1.   **Retrieve context from vector store**
+
+2.   **Generate an answer using an LLM**
+
+**Whilefunctional, this approach lacked:**
+
+*   **Transparency**
+    
+
+*   **Control**
+    
+
+*   **Intermediate reasoning visibility**
+    
+
+### 2.2 EnhancedMulti-Agent Flow
+
+**The systemwas upgraded to a four-stage multi-agent pipeline:**
+
+1.   **Planning Agent**
+
+2.   **Retrieval Agent**
+
+3.   **Summarization Agent**
+
+4.   **Verification Agent**
+
+**Each agentoperates on a shared state object (QAState) and updates only the fields itowns.**
+
+## 3\. Planning& Query Decomposition (Major Enhancement)
+
+### 3.1 WhyPlanning Was Added
+
+**Complexquestions often contain multiple sub-questions. A single retrieval step usuallyfails to gather comprehensive context.**
+
+**Example:**
+
+**“Analyze XYZCompany’s financial performance in 2002.”**
+
+**This actuallyrequires:**
+
+*   **Income statement analysis**
+    
+
+*   **Balance sheet analysis**
+    
+
+*   **Cash flow analysis**
+    
+
+*   **Profitability ratios**
+    
+
+*   **Liquidity ratios**
+    
+
+### 3.2 PlanningAgent Responsibilities
+
+**The PlanningAgent:**
+
+*   **Analyzes the user’s question**
+    
+
+*   **Produces:**
+    
+
+**Outputexample:**
+
+**Plan:**
+
+**\- Analyzeincome statement**
+
+**\- Analyzebalance sheet**
+
+**\- Analyzecash flow**
+
+**\- Evaluateprofitability**
+
+**\- Evaluateliquidity**
+
+**Sub-questions:**
+
+**\- What werethe key income statement figures?**
+
+**\- What werethe balance sheet highlights?**
+
+**\- What cashflow trends existed?**
+
+### 3.3 StateEnhancements
+
+**The shared QAStatewas extended with:**
+
+**enable\_planning:bool**
+
+**plan: str | None**
+
+**sub\_questions:list\[str\] | None**
+
+**This allows:**
+
+*   **Planning results to persist across agents**
+    
+
+*   **Frontend visualization**
+    
+
+*   **Conditional execution**
+    
+
+## 4\. ToggleableQuery Planning (Control Enhancement)
+
+### 4.1Motivation
+
+**Not allquestions require decomposition. Simple fact-based questions benefit from adirect retrieval path.**
+
+**To addressthis, a planning toggle was introduced.**
+
+### 4.2 BackendImplementation
+
+*   **The /qa endpoint accepts an enable\_planning flag**
+    
+
+*   **This flag is injected into the initial graph state**
+    
+
+*   **Routing logic conditionally skips planning when disabled**
+    
+
+**initial\_state= {**
+
+    **"question": question,**
+
+    **"enable\_planning":enable\_planning,**
+
+**}**
+
+### 4.3 PlanningNode Behavior
+
+**if notstate.get("enable\_planning", True):**
+
+    **return {**
+
+        **\*\*state,**
+
+        **"plan": None,**
+
+        **"sub\_questions": None,**
+
+    **}**
+
+**Result:**
+
+*   **Clean bypass of planning**
+    
+
+*   **No errors**
+    
+
+*   **Same downstream flow**
+    
+
+## 5\. RetrievalEnhancement Using Sub-Questions 
+
+### 5.1Improvement Over Single Query Retrieval
+
+**Instead ofretrieving context only using the original question, the system now:**
+
+*   **Iterates over decomposed sub-questions**
+    
+
+*   **Performs retrieval per sub-question**
+    
+
+*   **Merges results into a richer context**
+    
+
+**Thisdramatically improves:**
+
+*   **Recall**
+    
+
+*   **Answer completeness**
+    
+
+*   **Faithfulness**
+    
+
+## 6\. AnswerVerification Layer
+
+### 6.1 Purpose 
+
+**LLMs canhallucinate or over-generalize. To mitigate this, a Verification Agent wasintroduced.**
+
+**The agent:**
+
+*   **Reviews the draft answer**
+    
+
+*   **Cross-checks against retrieved context**
+    
+
+*   **Produces the final verified answer**
+    
+
+## 7\. APIEnhancements
+
+### 7.1 /qaEndpoint Improvements
+
+**Request body:**
+
+**{**
+
+  **"question": "string",**
+
+  **"enable\_planning": true**
+
+**}**
+
+**Responsebody:**
+
+**{**
+
+  **"answer": "string",**
+
+  **"context": "string",**
+
+  **"plan": "string | null",**
+
+  **"sub\_questions": \["string"\]**
+
+**}**
+
+**This makesthe API:**
+
+*   **Transparent**
+    
+
+*   **Explainable**
+    
+
+*   **Frontend-friendly**
+    
+
+### 7.2Validation Enhancements
+
+*   **Empty questions rejected with HTTP 400**
+    
+
+*   **Strong Pydantic validation**
+    
+
+*   **Clear error messages**
+    
+
+## 8\. FrontendEnhancements
+
+### 8.1 DedicatedFrontend Folder
+
+**Instead ofusing static/, a dedicated frontend/ folder was introduced to support:**
+
+*   **Better project organization**
+    
+
+*   **Scalability**
+    
+
+### 8.2 UIFeatures Added
+
+**✅ PDF Upload & Indexing**
+
+*   **Upload PDFs**
+    
+
+*   **Trigger vector indexing**
+    
+
+*   **Show indexed chunk count**
+    
+
+**✅ Ask Question Interface**
+
+*   **Multi-line input**
+    
+
+*   **Query planning toggle**
+    
+
+*   **Disabled input during processing**
+    
+
+### 8.3 Loading& UX Improvements
+
+*   **Spinner shown while request is processing**
+    
+
+*   **Ask button disabled during API call**
+    
+
+*   **Input field locked to prevent edits**
+    
+
+*   **UI automatically re-enabled on completion or error**
+    
+
+### 8.4 DisplayEnhancements
+
+**The UI nowrenders:**
+
+*   **🧠 Query Plan**
+    
+
+*   **🔍 Decomposed Sub-Questions (as a list)**
+    
+
+*   **✅ Final Answer**
+    
+
+**Each sectionupdates independently.**
+
+## 9\. DeploymentEnhancements
+
+### 9.1 BackendDeployment (Render)
+
+**Backenddeployed as a Python Web Service with:**
+
+**uvicornsrc.app.api:app --host 0.0.0.0 --port $PORT**
+
+**Keyimprovements:**
+
+*   **Environment variable based secrets**
+    
+
+*   **Production-ready configuration**
+    
+
+*   **No hard-coded ports**
+    
+
+## 10\. SecurityEnhancements
+
+### 10.1Environment Variables
+
+*   **.env used locally**
+    
+
+*   **Render Environment Variables used in production**
+    
+
+*   **.env excluded via .gitignore**
+    
+
+### 10.2 GitHygiene
+
+**.gitignoreincludes:**
+
+*   **.env**
+    
+
+*   **.venv**
+    
+
+*   **\_\_pycache\_\_/**
+    
+
+*   **Build artifacts**
+    
+
+**Prevents:**
+
+*   **Secret leaks**
+    
+
+*   **Large binary commits**
+    
+
+*   **Environment pollution**
+    
+
+## 11\. Logging& Observability
+
+### 11.1 PlanningLogs
+
+**When planningis enabled, logs clearly show:**
+
+**\[QUERY PLAN\]**
+
+**\[SUB-QUESTIONS\]**
+
+**Thissatisfies the acceptance criteria:**
+
+**“Complexquestions trigger a visible planning step in logs”**
 # Building a Knowledge-Based Q&A Application with
 
 # LangChain and Pinecone
