@@ -1,29 +1,48 @@
 const BACKEND_URL = "";
 
 async function indexPDF() {
+  console.log("index BUTTON CLICKED");
   const fileInput = document.getElementById("pdfFile");
+  const indexBtn = document.getElementById("indexBtn");
 
   if (!fileInput.files.length) {
     alert("Please select a PDF file");
     return;
   }
 
+  // 🔒 Disable UI while indexing
+  fileInput.disabled = true;
+  indexBtn.disabled = true;
+  indexBtn.innerText = "Indexing...";
+
   const formData = new FormData();
   formData.append("file", fileInput.files[0]);
 
-  const response = await fetch(`${BACKEND_URL}/index-pdf`, {
-    method: "POST",
-    body: formData
-  });
+  try {
+    const response = await fetch(`/index-pdf`, {
+      method: "POST",
+      body: formData
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      throw new Error("Indexing failed");
+    }
+
+    const data = await response.json();
+    alert(`Indexed ${data.chunks_indexed} chunks`);
+
+    fileInput.value = "";
+
+  } catch (error) {
     alert("Failed to index PDF");
-    return;
+  } finally {
+    // 🔓 Re-enable UI
+    fileInput.disabled = false;
+    indexBtn.disabled = false;
+    indexBtn.innerText = "Index PDF";
   }
-
-  const data = await response.json();
-  alert(`Indexed ${data.chunks_indexed} chunks`);
 }
+
 
 async function askQuestion() {
   console.log("ASK BUTTON CLICKED");

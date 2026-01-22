@@ -8,14 +8,16 @@
 <body>
 
   <h1>IKMS Multi-Agent RAG System</h1>
-  <p>Query Planning & Decomposition Enabled</p>
+  <p>Query Planning & Decomposition Enableddd</p>
 
   <hr>
 
   <h2>1️⃣ Upload & Index PDF</h2>
   <input type="file" id="pdfFile" accept="application/pdf">
   <br><br>
-  <button onclick="indexPDF()">Index PDF</button>
+  <button id="indexBtn" type="button" onclick="indexPDF()">
+  Index PDFe
+</button>
 
   <hr>
 
@@ -43,7 +45,11 @@
   <pre id="plan"></pre>
 
   <h3>🔍 Decomposed Sub-Questions</h3>
+  <div id="subQuestionsContainer">
+  <h3>Sub-Questions</h3>
   <ul id="subQuestions"></ul>
+</div>
+
 
   <h3>✅ Answer</h3>
   <p id="answer"></p>
