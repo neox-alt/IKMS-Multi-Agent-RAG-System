@@ -32,10 +32,6 @@ def create_qa_graph() -> Any:
     # Define linear flow: START -> retrieval -> summarization -> verification -> END
     builder.set_entry_point("planning")
 
-    builder.add_conditional_edges(
-        "planning",
-        lambda state: "retrieval" if state["enable_planning"] else "retrieval",
-    )
 
     builder.add_edge("planning", "retrieval")
     builder.add_edge("retrieval", "summarization")
