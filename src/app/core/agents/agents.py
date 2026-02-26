@@ -54,22 +54,18 @@ planning_agent = create_agent(
 )
 
 
-def retrieval_node(state: QAState) -> QAState:
-    """Retrieval Agent node: gathers context from vector store.
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from langchain_core.messages import HumanMessage, ToolMessage
 
-    This node:
-    - Sends the user's question to the Retrieval Agent.
-    - The agent uses the attached retrieval tool to fetch document chunks.
-    - Extracts the tool's content (CONTEXT string) from the ToolMessage.
-    - Stores the consolidated context string in `state["context"]`.
-    """
+def retrieval_node(state: QAState) -> QAState:
+    """Retrieval Agent node with parallel retrieval (sync version)."""
+
     question = state["question"]
     sub_questions = state.get("sub_questions") or []
 
     queries = [question] + sub_questions
-    collected_context = []
 
-    for q in queries:
+    def retrieve_single(q: str):
         result = retrieval_agent.invoke(
             {"messages": [HumanMessage(content=q)]}
         )
@@ -77,8 +73,20 @@ def retrieval_node(state: QAState) -> QAState:
         messages = result.get("messages", [])
         for msg in reversed(messages):
             if isinstance(msg, ToolMessage):
-                collected_context.append(str(msg.content))
-                break
+                return str(msg.content)
+
+        return None
+
+    collected_context = []
+
+    # Parallel execution using threads
+    with ThreadPoolExecutor(max_workers=len(queries)) as executor:
+        futures = [executor.submit(retrieve_single, q) for q in queries]
+
+        for future in as_completed(futures):
+            result = future.result()
+            if result:
+                collected_context.append(result)
 
     # Deduplicate chunks
     context = "\n\n".join(dict.fromkeys(collected_context))
