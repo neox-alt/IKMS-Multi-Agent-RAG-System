@@ -154,13 +154,13 @@ Please verify and correct the draft answer, removing any unsupported claims."""
 
 def planning_node(state: QAState) -> QAState:
 
-    if not state.get("enable_planning", True):
-        # Planning disabled → do nothing
-        return {
-            **state,
-            "plan": None,
-            "sub_questions": None,
-        }
+    # if not state.get("enable_planning", True):
+    #     # Planning disabled → do nothing
+    #     return {
+    #         **state,
+    #         "plan": None,
+    #         "sub_questions": None,
+    #     }
 
     
     question = state["question"]

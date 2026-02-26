@@ -29,8 +29,11 @@ def create_qa_graph() -> Any:
     builder.add_node("summarization", summarization_node)
     builder.add_node("verification", verification_node)
 
-    # Define linear flow: START -> retrieval -> summarization -> verification -> END
-    builder.set_entry_point("planning")
+    # Add conditional entry routing based on whether planning is enabled
+    builder.add_conditional_edges(
+        START,
+        lambda state: "planning" if state.get("enable_planning", True) else "retrieval",
+    )
 
 
     builder.add_edge("planning", "retrieval")
